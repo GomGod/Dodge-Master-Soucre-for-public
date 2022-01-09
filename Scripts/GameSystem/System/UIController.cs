@@ -25,7 +25,6 @@ public class UIController : MonoBehaviour
     private readonly Vector3 _scaleMainTitle = new(1.75f, 1.75f, 1.75f);
     private readonly Vector3 _scaleInGameTitle = new(0.75f, 0.75f, 0.75f);
 
-
     public void SetUiAlignment(GameManager.GameStates states)
     {
 
@@ -44,8 +43,6 @@ public class UIController : MonoBehaviour
                 throw new ArgumentOutOfRangeException(nameof(states), states, null);
         }
     }
-
-    
     private void PresetMainTitle()
     {
         mainTitleSet.SetActive(true);
@@ -59,7 +56,6 @@ public class UIController : MonoBehaviour
         scoreTmp.gameObject.SetActive(false);
         
     }
-
     private void PresetInGame()
     {
         mainTitleSet.SetActive(false);
@@ -104,6 +100,13 @@ public class UIController : MonoBehaviour
     public void SetScore(float score)
     {
         scoreTmp.text = $"Score : {score}";
+    }
+
+    [SerializeField] private Transform padPosR;
+    [SerializeField] private Transform padPosL;
+    public void SetControlPad(bool isRight, GameObject padObj)
+    {
+        padObj.transform.position = isRight ? padPosR.position : padPosL.position;
     }
 
 

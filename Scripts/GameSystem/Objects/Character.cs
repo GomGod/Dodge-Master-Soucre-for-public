@@ -16,14 +16,24 @@ public class Character : MonoBehaviour, InputListener
     [SerializeField] private GameObject afterImagePrefab;
     [SerializeField] private float afterImageDelay = 0.15f;
     [SerializeField] private float afterImageRemain = 0.33f;
-
+    [SerializeField] private SpriteRenderer characterSprite;
+    
+    [SerializeField] public AudioSource deadSound;
+    [SerializeField] public AudioSource dashSound;
+    
     private readonly ObjectPool _afterImgPool = new();
+    private static readonly int Fade = Shader.PropertyToID("_Fade");
 
+    public bool disabled = false;
+    
     public bool Moving
     {
         get => _moving;
         set
         {
+            if(value && _moving != true)
+                dashSound.Play();
+            
             _moving = value;
             characterAnimator.SetBool(IsDash, _moving);
         }
@@ -49,6 +59,30 @@ public class Character : MonoBehaviour, InputListener
             yield return new WaitForSeconds(afterImageDelay);
         }
     }
+
+    private Sequence characterSeq;
+    
+    public void PlayDeadFX()
+    {
+        var fadeValue = 1f;
+        characterSprite.material.SetFloat(Fade, 1f);
+
+        characterSeq = DOTween.Sequence();
+        characterSeq.Append(DOTween.To(() => fadeValue, x =>
+            {
+                fadeValue = x;
+                characterSprite.material.SetFloat(Fade, x);
+            }, 0f, 0.66f));
+        deadSound.Play();
+        disabled = true;
+    }
+
+    public void ResetCharacter()
+    {
+        characterSeq?.Kill();
+        characterSprite.material.SetFloat(Fade, 1f);
+        disabled = false;
+    }
     
     private void Start()
     {
@@ -58,6 +92,8 @@ public class Character : MonoBehaviour, InputListener
 
     public void Left()
     {
+        if (disabled) return;
+        
         transform.localScale = _leftScale;
         if (!Moving)
             GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.L);
@@ -65,6 +101,8 @@ public class Character : MonoBehaviour, InputListener
 
     public void Right()
     {
+        if (disabled) return;
+        
         transform.localScale = _rightScale;
         if (!Moving)
             GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.R);
@@ -72,12 +110,15 @@ public class Character : MonoBehaviour, InputListener
 
     public void Up()
     {
+        if (disabled) return;
         if (!Moving)
             GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.U);
     }
 
     public void Down()
     {
+        if (disabled) return;
+        
         if (!Moving)
             GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.D);
     }

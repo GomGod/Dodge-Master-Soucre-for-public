@@ -51,18 +51,11 @@ public class Laser : MonoBehaviour
     }
 }
 
-public struct ProjectileInfo
+public struct LaserInfo
 {
     public Vector2 Dir;
     public Vector2 GenPosVector;
     public float WarningDelay;
     public float AfterDelay;
-
-    public ProjectileInfo(Vector2 dir, Vector2 genPosVector, float warningDelay, float afterDelay)
-    {
-        Dir = dir;
-        GenPosVector = genPosVector;
-        WarningDelay = warningDelay;
-        AfterDelay = afterDelay;
-    }
 }
+

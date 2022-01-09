@@ -62,6 +62,7 @@ public class GameManager : MonoBehaviour
     {
         _currentUserData = udata; 
         UserDataManager.SaveUserData();
+        SetUserConfiguration();
     }
 
     public UserData GetUserData()
@@ -87,6 +88,7 @@ public class GameManager : MonoBehaviour
     public void ReturnToTitle()
     {
         CurrentGameState = GameStates.Title;
+        character.ResetCharacter();
     }
 
     public void SetUserNickname()
@@ -132,8 +134,7 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-
-        GlobalSources.Instance.audioCharacterMove.Play();
+        
         _characterPosition = currentVector;
         character.Moving = true;
         character.transform.DOMove(_coordinatesGrid[(int) _characterPosition.y, (int) _characterPosition.x], 0.25f)
@@ -224,11 +225,48 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    private void SetUserConfiguration()
+    {
+        if (_currentUserData.controls == GlobalConst.Controls[0])
+        {
+            InputManager.Instance.SetInputStyle(InputManager.InputStyle.Slide);
+        }
+        else if (_currentUserData.controls == GlobalConst.Controls[1])
+        {
+            InputManager.Instance.SetInputStyle(InputManager.InputStyle.VPad);
+            uiController.SetControlPad(true, inputManager.GetPadObject());
+        }
+        else if (_currentUserData.controls == GlobalConst.Controls[2])
+        {
+            InputManager.Instance.SetInputStyle(InputManager.InputStyle.VPad);
+            uiController.SetControlPad(false, inputManager.GetPadObject());
+        }
+
+        if (_currentUserData.bgm == GlobalConst.OnOff[0])
+        {
+            AudioManager.Instance.BgmOn();
+        }
+        else
+        {
+            AudioManager.Instance.BgmOff();
+        }
+
+        if (_currentUserData.sfx == GlobalConst.OnOff[0])
+        {
+            AudioManager.Instance.SfxOn();
+        }
+        else
+        {
+            AudioManager.Instance.SfxOff();
+        }
+    }
+
     #endregion
     
     #region Ingame
     [SerializeField] private WarningSystem warningSystem;    
-    [SerializeField] private LaserObjectManager laserObjectManager;
+    [SerializeField] private ObstacleManager obstacleManager;
     [SerializeField] public Transform objectsContainer;
     
     public readonly PatternStore PatternStore = new();
@@ -262,18 +300,20 @@ public class GameManager : MonoBehaviour
             interval = interval < MINInterval ? MINInterval : interval;
             yield return new WaitUntil(()=>!durPattern);
             yield return new WaitForSeconds(interval);
-            laserObjectManager.AddRandomPattern();
+            obstacleManager.AddRandomPattern();
         }
         // ReSharper disable once IteratorNeverReturns
     }
+
+    public Vector2 GetCharacterPos() => _characterPosition;
     public void InitializeGame()
     {
         _lastScore = 0;
         durPattern = false;
         CurrentGameState = GameStates.Game;
         StartCoroutine(GameRoutine());
-        laserObjectManager.ClearPatterns();
-        laserObjectManager.ActivatePatternProcessor();
+        obstacleManager.ClearPatterns();
+        obstacleManager.ActivateObstacleProcessor();
         Score = 0;
         GlobalSources.Instance.audioBgm.Play();
         GlobalSources.Instance.audioBgm.DOKill();
@@ -292,9 +332,11 @@ public class GameManager : MonoBehaviour
         CurrentGameState = GameStates.Record;
         _lastScore = Score;        
         StopAllCoroutines();
-        laserObjectManager.DisablePatternProcessor();
+        obstacleManager.DisableObstacleProcessor();
         FadeBGM(0f, 1f);
         uiController.SetScore(_lastScore);
+        character.PlayDeadFX();
+        
         if (_accountLoadFailed) return;
         
         _currentUserData.maxScore =_currentUserData.maxScore < _lastScore ? _lastScore : _currentUserData.maxScore;

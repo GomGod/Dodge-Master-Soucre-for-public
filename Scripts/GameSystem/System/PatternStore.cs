@@ -39,7 +39,7 @@ public class PatternStore
                 var dir = genNumber < 5 ? new Vector2(0, 1) : new Vector2(1, 0);
                 var genPos = genNumber < 5 ? new Vector2(genNumber + 1, 0) : new Vector2(0, genNumber - 4);
 
-                var tempPrj = new ProjectileInfo()
+                var tempPrj = new LaserInfo()
                 {
                     GenPosVector = genPos,
                     Dir = dir,

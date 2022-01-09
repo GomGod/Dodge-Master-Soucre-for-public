@@ -13,7 +13,10 @@ public class UserDataManager
         {
             maxScore = 0,
             stackedScore = 0,
-            noAds = false
+            noAds = false,
+            controls = GlobalConst.Controls[0],
+            bgm = GlobalConst.OnOff[0],
+            sfx = GlobalConst.OnOff[0]
         };
 
         GameManager.Instance.SetUserNickname(uid);
@@ -43,8 +46,18 @@ public class UserDataManager
         {
             maxScore = jsonUdataFormat.maxScore,
             stackedScore = jsonUdataFormat.stackedScore,
-            noAds = jsonUdataFormat.noAds
+            noAds = jsonUdataFormat.noAds,
+            controls = jsonUdataFormat.controls,
+            bgm = jsonUdataFormat.bgm,
+            sfx = jsonUdataFormat.sfx
         };
+
+        if (uData.controls == string.Empty)
+            uData.controls = GlobalConst.Controls[0];
+        if (uData.bgm == string.Empty)
+            uData.controls = GlobalConst.OnOff[0];
+        if (uData.sfx == string.Empty)
+            uData.controls = GlobalConst.OnOff[0];
         
         GameManager.Instance.SetUserData(uData);
         return true;
@@ -67,4 +80,10 @@ public struct UserData
     public int maxScore;
     public int stackedScore;
     public bool noAds;
+
+    #region Player Configs
+    public string controls;
+    public string bgm;
+    public string sfx;
+    #endregion
 } 
