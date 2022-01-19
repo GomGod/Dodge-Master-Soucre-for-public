@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Character : MonoBehaviour, InputListener
 {
@@ -92,34 +94,73 @@ public class Character : MonoBehaviour, InputListener
 
     public void Left()
     {
-        if (disabled) return;
-        
-        transform.localScale = _leftScale;
-        if (!Moving)
-            GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.L);
+        inputBuffer = Input.L; 
+        _currentTimer = 0.0f;
     }
 
     public void Right()
     {
-        if (disabled) return;
-        
-        transform.localScale = _rightScale;
-        if (!Moving)
-            GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.R);
+        inputBuffer = Input.R; 
+        _currentTimer = 0.0f;
     }
 
     public void Up()
     {
-        if (disabled) return;
-        if (!Moving)
-            GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.U);
+        inputBuffer = Input.U; 
+        _currentTimer = 0.0f;
     }
 
     public void Down()
     {
-        if (disabled) return;
-        
-        if (!Moving)
-            GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.D);
+        inputBuffer = Input.D; 
+        _currentTimer = 0.0f;
+    }
+    
+    private enum Input {N,L,R,U,D}
+
+    [SerializeField]private float inputRemain = 0.1f;
+    [SerializeField]private Input inputBuffer = Input.N;
+    private float _currentTimer = 0.0f;
+    
+    private void ProcessInput()
+    {
+        if (_moving || disabled)
+            return;
+
+        switch (inputBuffer)
+        {
+            case Input.N:
+                break;
+            case Input.L:
+                transform.localScale = _leftScale;
+                inputBuffer = Input.N;
+                GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.L);
+                break;
+            case Input.R:
+                transform.localScale = _rightScale;
+                inputBuffer = Input.N;
+                GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.R);
+                break;
+            case Input.U:
+                inputBuffer = Input.N;
+                GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.U);
+                break;
+            case Input.D:
+                inputBuffer = Input.N;
+                GameManager.Instance.TryCharacterMove(GameManager.MoveDirection.D);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void Update()
+    {
+        _currentTimer += Time.deltaTime;
+        if (inputBuffer != Input.N && _currentTimer >= inputRemain)
+        {
+            inputBuffer = Input.N;
+        }
+        ProcessInput();
     }
 }
